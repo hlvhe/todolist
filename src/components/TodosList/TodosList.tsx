@@ -1,4 +1,6 @@
 import { List, Checkbox } from 'antd';
+import { CheckboxChangeEvent } from 'antd/es/checkbox';
+import { useState } from 'react';
 
 type Todo = {
     title: string;
@@ -17,16 +19,32 @@ const data: Todo[] = [
 ];
 
 export function TodosList() {
+    const [todos, setTodos] = useState(data);
+
+    const onChange = (e: CheckboxChangeEvent, idx: number) => {
+        const todo = { ...todos[idx], checked: e.target.checked };
+        const newTodos = [...todos];
+        newTodos.splice(idx, 1);
+        if (todo.checked) newTodos.unshift(todo);
+        else newTodos.push(todo);
+        setTodos(newTodos);
+    };
+
     return (
         <>
             <h1>Todos</h1>
             <List
                 itemLayout="horizontal"
-                dataSource={data}
-                renderItem={(item: Todo) => (
+                dataSource={todos}
+                renderItem={(item, i) => (
                     <List.Item>
                         <List.Item.Meta title={<p>{item.title}</p>} />
-                        <Checkbox checked={item.checked}>Done</Checkbox>
+                        <Checkbox
+                            onChange={(e) => onChange(e, i)}
+                            checked={item.checked}
+                        >
+                            Done
+                        </Checkbox>
                     </List.Item>
                 )}
             />
