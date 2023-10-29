@@ -4,11 +4,12 @@ import { Routes, Route } from 'react-router-dom';
 import { TodoDetail } from './components/TodoDetail/TodoDetail';
 import { CheckboxChangeEvent } from 'antd/es/checkbox';
 import { useState } from 'react';
+import { TodoAddForm } from './components/TodoAddForm/TodoAddForm';
 
 export type Todo = {
     title: string;
-    desc: string;
-    checked: boolean;
+    desc: string | undefined;
+    checked?: boolean;
 };
 
 const data: Todo[] = [
@@ -33,6 +34,11 @@ function App() {
         setTodos(newTodos);
     };
 
+    const addTodo = (item: Todo) => {
+        item.checked = true;
+        setTodos((prevState) => [item, ...prevState]);
+    };
+
     const getTodo = (id: number) => {
         return todos[id];
     };
@@ -47,6 +53,10 @@ function App() {
                 <Route
                     path="/todo/:id"
                     element={<TodoDetail getTodo={getTodo} />}
+                />
+                <Route
+                    path="/add"
+                    element={<TodoAddForm addTodo={addTodo} />}
                 />
             </Routes>
         </div>
