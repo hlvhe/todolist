@@ -1,20 +1,23 @@
 import { List, Checkbox, Button, Space, Row, Col } from 'antd';
-import { MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './TodosList.module.css';
 import { Todo } from '../../App';
 import { CheckboxChangeEvent } from 'antd/es/checkbox';
 
 type TodosListProps = {
-    checkTodo: (e: CheckboxChangeEvent, idx: number) => void;
+    onCheckboxChange: (e: CheckboxChangeEvent, idx: number) => void;
     todos: Todo[];
 };
 
-export function TodosList({ checkTodo, todos }: TodosListProps) {
+export function TodosList({ onCheckboxChange, todos }: TodosListProps) {
     const navigate = useNavigate();
 
-    const handleClick = (e: MouseEvent, i: number) => {
-        navigate(`/todo/${i}`);
+    const handleBtnAddClick = () => {
+        navigate(`/add`);
+    };
+
+    const handleBtnDetailsClick = (id: number) => {
+        navigate(`/todo/${id}`);
     };
 
     return (
@@ -25,7 +28,7 @@ export function TodosList({ checkTodo, todos }: TodosListProps) {
                 </Col>
 
                 <Col span={12}>
-                    <Button type="primary" onClick={() => navigate(`/add`)}>
+                    <Button type="primary" onClick={handleBtnAddClick}>
                         Add a todo
                     </Button>
                 </Col>
@@ -41,12 +44,12 @@ export function TodosList({ checkTodo, todos }: TodosListProps) {
                         <Space>
                             <Button
                                 type="primary"
-                                onClick={(e) => handleClick(e, i)}
+                                onClick={() => handleBtnDetailsClick(i)}
                             >
                                 Details
                             </Button>
                             <Checkbox
-                                onChange={(e) => checkTodo(e, i)}
+                                onChange={(e) => onCheckboxChange(e, i)}
                                 checked={item.checked}
                             >
                                 Done

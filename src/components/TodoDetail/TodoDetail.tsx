@@ -4,19 +4,19 @@ import { Todo } from '../../App';
 import { Card } from 'antd';
 
 type TodoDetailProps = {
-    getTodo: (id: number) => Todo;
+    getTodoById: (id: number) => Todo | undefined;
 };
 
-export function TodoDetail({ getTodo }: TodoDetailProps) {
+export function TodoDetail({ getTodoById }: TodoDetailProps) {
     const { id } = useParams();
     const [todo, setTodo] = useState<Todo>();
     const navigate = useNavigate();
 
     useEffect(() => {
-        const todo = getTodo(parseInt(id!));
+        const todo = getTodoById(parseInt(id!));
         if (todo === undefined) navigate('/');
         setTodo(todo);
-    }, [getTodo, id, navigate]);
+    }, [getTodoById, id, navigate]);
 
     return (
         <>

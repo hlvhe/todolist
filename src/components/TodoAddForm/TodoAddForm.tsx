@@ -1,17 +1,18 @@
 import { Button, Form, Input } from 'antd';
 import { Todo } from '../../App';
-import TextArea from 'antd/es/input/TextArea';
 import { useNavigate } from 'react-router-dom';
 
+const { TextArea } = Input;
+
 type TodoAddFormProps = {
-    addTodo: (item: Todo) => void;
+    onAddTodo: (item: Todo) => void;
 };
 
-export function TodoAddForm({ addTodo }: TodoAddFormProps) {
+export function TodoAddForm({ onAddTodo }: TodoAddFormProps) {
     const navigate = useNavigate();
 
     const onFinish = (item: Todo) => {
-        addTodo(item);
+        onAddTodo(item);
         navigate('/');
     };
 

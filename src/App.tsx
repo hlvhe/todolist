@@ -3,8 +3,9 @@ import styles from './App.module.css';
 import { Routes, Route } from 'react-router-dom';
 import { TodoDetail } from './components/TodoDetail/TodoDetail';
 import { CheckboxChangeEvent } from 'antd/es/checkbox';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { TodoAddForm } from './components/TodoAddForm/TodoAddForm';
+import api from './api';
 
 export type Todo = {
     title: string;
@@ -12,34 +13,65 @@ export type Todo = {
     checked?: boolean;
 };
 
-const data: Todo[] = [
-    { title: 'title1', desc: 'desc', checked: true },
-    { title: 'title2', desc: 'desc', checked: true },
-    { title: 'title3', desc: 'desc', checked: true },
-    { title: 'title4', desc: 'desc', checked: true },
-    { title: 'title5', desc: 'desc', checked: true },
-    { title: 'title6', desc: 'desc', checked: true },
-    { title: 'title7', desc: 'desc', checked: true },
-];
-
 function App() {
-    const [todos, setTodos] = useState(data);
+    const [todos, setTodos] = useState<Todo[]>([]);
 
-    const checkTodo = (e: CheckboxChangeEvent, idx: number) => {
-        const todo = { ...todos[idx], checked: e.target.checked };
+    useEffect(() => {
+        fetchTodos();
+    }, []);
+
+    const fetchTodos = async () => {
+        try {
+            const todos = await api.todo.fetchAll();
+            setTodos(todos);
+        } catch (error) {
+            console.error('Error fetching:', error);
+        }
+    };
+
+    const swapAndToggleTodo = (
+        todos: Todo[],
+        deleteId: number,
+        addId: number,
+    ) => {
         const newTodos = [...todos];
-        newTodos.splice(idx, 1);
-        if (todo.checked) newTodos.unshift(todo);
-        else newTodos.push(todo);
+        const todo = newTodos.splice(deleteId, 1)[0];
+        newTodos.splice(addId, 0, { ...todo, checked: !todo.checked });
+        return newTodos;
+    };
+
+    const updateTodoChecked = async (e: CheckboxChangeEvent, idx: number) => {
+        const id = e.target.checked ? 0 : todos.length - 1;
+        const newTodos = swapAndToggleTodo([...todos], idx, id);
         setTodos(newTodos);
+        try {
+            await api.todo.update(newTodos);
+        } catch (error) {
+            console.error('Error while updating:', error);
+            setTodos((prev) => {
+                const newTodos = swapAndToggleTodo(prev, id, idx);
+                return newTodos;
+            });
+        }
     };
 
-    const addTodo = (item: Todo) => {
+    const addTodo = async (item: Todo) => {
         item.checked = true;
-        setTodos((prevState) => [item, ...prevState]);
+        const newTodos = [item, ...todos];
+        setTodos(newTodos);
+        try {
+            await api.todo.update(newTodos);
+        } catch (error) {
+            console.error('Error while adding:', error);
+            setTodos((prev) => {
+                const newTodos = [...prev];
+                newTodos.shift();
+                return newTodos;
+            });
+        }
     };
 
-    const getTodo = (id: number) => {
+    const getTodoById = (id: number): Todo | undefined => {
         return todos[id];
     };
 
@@ -48,15 +80,20 @@ function App() {
             <Routes>
                 <Route
                     path="/"
-                    element={<TodosList checkTodo={checkTodo} todos={todos} />}
+                    element={
+                        <TodosList
+                            onCheckboxChange={updateTodoChecked}
+                            todos={todos}
+                        />
+                    }
                 />
                 <Route
                     path="/todo/:id"
-                    element={<TodoDetail getTodo={getTodo} />}
+                    element={<TodoDetail getTodoById={getTodoById} />}
                 />
                 <Route
                     path="/add"
-                    element={<TodoAddForm addTodo={addTodo} />}
+                    element={<TodoAddForm onAddTodo={addTodo} />}
                 />
             </Routes>
         </div>
