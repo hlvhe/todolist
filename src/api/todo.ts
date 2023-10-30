@@ -5,9 +5,9 @@ const data: Todo[] = [
     { title: 'title2', desc: 'desc', checked: true },
     { title: 'title3', desc: 'desc', checked: true },
     { title: 'title4', desc: 'desc', checked: true },
-    { title: 'title5', desc: 'desc', checked: true },
-    { title: 'title6', desc: 'desc', checked: true },
-    { title: 'title7', desc: 'desc', checked: true },
+    { title: 'title5', desc: 'desc', checked: false },
+    { title: 'title6', desc: 'desc', checked: false },
+    { title: 'title7', desc: 'desc', checked: false },
 ];
 
 function update(items: Todo[]) {
