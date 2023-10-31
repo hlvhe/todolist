@@ -6,10 +6,15 @@ import { CheckboxChangeEvent } from 'antd/es/checkbox';
 
 type TodosListProps = {
     onCheckboxChange: (e: CheckboxChangeEvent, idx: number) => void;
+    onDeleteBtnDeleteClick: (idx: number) => void;
     todos: Todo[];
 };
 
-export function TodosList({ onCheckboxChange, todos }: TodosListProps) {
+export function TodosList({
+    onCheckboxChange,
+    onDeleteBtnDeleteClick,
+    todos,
+}: TodosListProps) {
     const navigate = useNavigate();
 
     const handleBtnAddClick = () => {
@@ -42,6 +47,13 @@ export function TodosList({ onCheckboxChange, todos }: TodosListProps) {
                     <List.Item>
                         <List.Item.Meta title={<p>{item.title}</p>} />
                         <Space>
+                            <Button
+                                type="primary"
+                                danger
+                                onClick={() => onDeleteBtnDeleteClick(i)}
+                            >
+                                Delete
+                            </Button>
                             <Button
                                 type="primary"
                                 onClick={() => handleBtnDetailsClick(i)}

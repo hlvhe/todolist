@@ -40,7 +40,10 @@ function App() {
         return newTodos;
     };
 
-    const updateTodoChecked = async (e: CheckboxChangeEvent, idx: number) => {
+    const updateTodoChecked = async (
+        e: CheckboxChangeEvent,
+        idx: number,
+    ): Promise<void> => {
         const id = e.target.checked ? 0 : todos.length - 1;
         const newTodos = swapAndToggleTodo([...todos], idx, id);
         setTodos(newTodos);
@@ -55,7 +58,7 @@ function App() {
         }
     };
 
-    const addTodo = async (item: Todo) => {
+    const addTodo = async (item: Todo): Promise<void> => {
         item.checked = true;
         const newTodos = [item, ...todos];
         setTodos(newTodos);
@@ -75,6 +78,24 @@ function App() {
         return todos[id];
     };
 
+    const deleteTodo = async (id: number): Promise<void> => {
+        const newTodos = [...todos];
+        const todo = newTodos.splice(id, 1)[0];
+        setTodos(newTodos);
+
+        try {
+            await api.todo.update(newTodos);
+        } catch (error) {
+            console.error('Error while deleting:', error);
+            newTodos.splice(id, 0, todo);
+            setTodos((prev) => {
+                const newTodos = [...prev];
+                newTodos.splice(id, 0, todo);
+                return newTodos;
+            });
+        }
+    };
+
     return (
         <div className={styles.app}>
             <Routes>
@@ -83,6 +104,7 @@ function App() {
                     element={
                         <TodosList
                             onCheckboxChange={updateTodoChecked}
+                            onDeleteBtnDeleteClick={deleteTodo}
                             todos={todos}
                         />
                     }
