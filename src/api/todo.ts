@@ -1,21 +1,21 @@
 import { Todo } from '../App';
 
 const data: Todo[] = [
-    { title: 'title1', desc: 'desc', checked: true },
-    { title: 'title2', desc: 'desc', checked: true },
-    { title: 'title3', desc: 'desc', checked: true },
-    { title: 'title4', desc: 'desc', checked: true },
-    { title: 'title5', desc: 'desc', checked: false },
-    { title: 'title6', desc: 'desc', checked: false },
-    { title: 'title7', desc: 'desc', checked: false },
+    { id: 1, title: 'title1', desc: 'desc', checked: true },
+    { id: 2, title: 'title2', desc: 'desc', checked: true },
+    { id: 3, title: 'title3', desc: 'desc', checked: true },
+    { id: 4, title: 'title4', desc: 'desc', checked: true },
+    { id: 5, title: 'title5', desc: 'desc', checked: false },
+    { id: 6, title: 'title6', desc: 'desc', checked: false },
+    { id: 7, title: 'title7', desc: 'desc', checked: false },
 ];
 
 function update(items: Todo[]) {
-    return new Promise<void>((resolve) => {
+    return new Promise<void>((resolve, reject) => {
         setTimeout(() => {
             localStorage.setItem('todos', JSON.stringify(items));
             resolve();
-        }, 2000);
+        }, 1500);
     });
 }
 
@@ -25,7 +25,7 @@ function fetchAll(): Promise<Todo[]> {
             const jsonValue = localStorage.getItem('todos');
             const res = jsonValue == null ? data : JSON.parse(jsonValue);
             resolve(res);
-        }, 2000);
+        }, 1500);
     });
 }
 

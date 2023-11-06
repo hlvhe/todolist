@@ -8,6 +8,7 @@ import { TodoAddForm } from './components/TodoAddForm/TodoAddForm';
 import api from './api';
 
 export type Todo = {
+    id: number;
     title: string;
     desc: string | undefined;
     checked?: boolean;
@@ -15,6 +16,13 @@ export type Todo = {
 
 function App() {
     const [todos, setTodos] = useState<Todo[]>([]);
+    const [updateTimeout, setUpdateTimeout] = useState<{
+        id: NodeJS.Timeout | null;
+        time: number | null;
+    }>({
+        id: null,
+        time: null,
+    });
 
     useEffect(() => {
         fetchTodos();
@@ -29,71 +37,65 @@ function App() {
         }
     };
 
-    const swapAndToggleTodo = (
-        todos: Todo[],
-        deleteId: number,
-        addId: number,
-    ) => {
-        const newTodos = [...todos];
-        const todo = newTodos.splice(deleteId, 1)[0];
-        newTodos.splice(addId, 0, { ...todo, checked: !todo.checked });
-        return newTodos;
-    };
+    const handleUpdateTimeout = async (items: Todo[]) => {
+        const currentTime = Date.now();
+        let delay = 1000;
+        const exponent = 0.79;
+        const max = 5000;
 
-    const updateTodoChecked = async (
-        e: CheckboxChangeEvent,
-        idx: number,
-    ): Promise<void> => {
-        const id = e.target.checked ? 0 : todos.length - 1;
-        const newTodos = swapAndToggleTodo([...todos], idx, id);
-        setTodos(newTodos);
-        try {
-            await api.todo.update(newTodos);
-        } catch (error) {
-            console.error('Error while updating:', error);
-            setTodos((prev) => {
-                const newTodos = swapAndToggleTodo(prev, id, idx);
-                return newTodos;
-            });
+        if (updateTimeout.id) clearTimeout(updateTimeout.id);
+        if (updateTimeout.time !== null) {
+            const timeDiff = currentTime - updateTimeout.time;
+            const clickRate = timeDiff > 0 ? 1 / (timeDiff / 1000) : 0;
+            delay *= Math.pow(1 + clickRate, exponent);
+            delay = Math.min(delay, max);
         }
+
+        const timeoutId = setTimeout(async () => {
+            try {
+                await api.todo.update(items);
+            } catch (error) {
+                console.error('Error while updating:', error);
+                await fetchTodos();
+            }
+        }, delay);
+
+        setUpdateTimeout({
+            id: timeoutId,
+            time: currentTime,
+        });
     };
 
-    const addTodo = async (item: Todo): Promise<void> => {
+    const updateTodoChecked = async (e: CheckboxChangeEvent, id: number) => {
+        const idxToInsert = e.target.checked ? 0 : todos.length - 1;
+        const idxToRemove = todos.findIndex((item) => item.id === id);
+
+        const newTodos = [...todos];
+        const [removedItem] = newTodos.splice(idxToRemove, 1);
+        newTodos.splice(idxToInsert, 0, {
+            ...removedItem,
+            checked: !removedItem.checked,
+        });
+
+        setTodos(newTodos);
+        handleUpdateTimeout(newTodos);
+    };
+
+    const addTodo = async (item: Todo) => {
         item.checked = true;
         const newTodos = [item, ...todos];
         setTodos(newTodos);
-        try {
-            await api.todo.update(newTodos);
-        } catch (error) {
-            console.error('Error while adding:', error);
-            setTodos((prev) => {
-                const newTodos = [...prev];
-                newTodos.shift();
-                return newTodos;
-            });
-        }
+        handleUpdateTimeout(newTodos);
     };
 
     const getTodoById = (id: number): Todo | undefined => {
         return todos[id];
     };
 
-    const deleteTodo = async (id: number): Promise<void> => {
-        const newTodos = [...todos];
-        const todo = newTodos.splice(id, 1)[0];
+    const deleteTodo = (id: number) => {
+        const newTodos = todos.filter((item) => item.id !== id);
         setTodos(newTodos);
-
-        try {
-            await api.todo.update(newTodos);
-        } catch (error) {
-            console.error('Error while deleting:', error);
-            newTodos.splice(id, 0, todo);
-            setTodos((prev) => {
-                const newTodos = [...prev];
-                newTodos.splice(id, 0, todo);
-                return newTodos;
-            });
-        }
+        handleUpdateTimeout(newTodos);
     };
 
     return (
@@ -104,7 +106,7 @@ function App() {
                     element={
                         <TodosList
                             onCheckboxChange={updateTodoChecked}
-                            onDeleteBtnDeleteClick={deleteTodo}
+                            onDeleteBtnClick={deleteTodo}
                             todos={todos}
                         />
                     }

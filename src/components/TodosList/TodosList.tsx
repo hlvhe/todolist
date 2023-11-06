@@ -6,13 +6,13 @@ import { CheckboxChangeEvent } from 'antd/es/checkbox';
 
 type TodosListProps = {
     onCheckboxChange: (e: CheckboxChangeEvent, idx: number) => void;
-    onDeleteBtnDeleteClick: (idx: number) => void;
+    onDeleteBtnClick: (idx: number) => void;
     todos: Todo[];
 };
 
 export function TodosList({
     onCheckboxChange,
-    onDeleteBtnDeleteClick,
+    onDeleteBtnClick,
     todos,
 }: TodosListProps) {
     const navigate = useNavigate();
@@ -43,25 +43,25 @@ export function TodosList({
                 className={styles.list}
                 itemLayout="horizontal"
                 dataSource={todos}
-                renderItem={(item: Todo, i) => (
-                    <List.Item>
+                renderItem={(item: Todo) => (
+                    <List.Item key={item.id}>
                         <List.Item.Meta title={<p>{item.title}</p>} />
                         <Space>
                             <Button
                                 type="primary"
                                 danger
-                                onClick={() => onDeleteBtnDeleteClick(i)}
+                                onClick={() => onDeleteBtnClick(item.id)}
                             >
                                 Delete
                             </Button>
                             <Button
                                 type="primary"
-                                onClick={() => handleBtnDetailsClick(i)}
+                                onClick={() => handleBtnDetailsClick(item.id)}
                             >
                                 Details
                             </Button>
                             <Checkbox
-                                onChange={(e) => onCheckboxChange(e, i)}
+                                onChange={(e) => onCheckboxChange(e, item.id)}
                                 checked={item.checked}
                             >
                                 Done
