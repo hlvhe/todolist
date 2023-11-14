@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import { TodosList } from './components/TodosList/TodosList';
 import styles from './App.module.css';
 import { Routes, Route } from 'react-router-dom';
@@ -9,7 +10,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
 export type Todo = {
-  id: number;
+  id: string;
   title: string;
   desc: string | undefined;
   checked?: boolean;
@@ -116,7 +117,7 @@ function App() {
     });
   };
 
-  const updateTodoChecked = (e: CheckboxChangeEvent, id: number) => {
+  const updateTodoChecked = (e: CheckboxChangeEvent, id: string) => {
     const idxToInsert = e.target.checked ? 0 : todos?.length! - 1;
     const idxToRemove = todos?.findIndex((item) => item.id === id);
 
@@ -131,15 +132,16 @@ function App() {
 
   const addTodo = (item: Todo) => {
     item.checked = true;
+    item.id = uuidv4();
     const newTodos = [item, ...todos!];
     handleUpdateTimeout(newTodos);
   };
 
-  const getTodoById = (id: number): Todo | undefined => {
-    return todos![id];
+  const getTodoById = (id: string): Todo | undefined => {
+    return todos.find((item) => item.id === id);
   };
 
-  const deleteTodo = (id: number) => {
+  const deleteTodo = (id: string) => {
     const newTodos = todos?.filter((item) => item.id !== id);
     handleUpdateTimeout(newTodos);
   };

@@ -1,13 +1,14 @@
 import { Todo } from '../App';
+import { v4 as uuidv4 } from 'uuid';
 
-const data: Todo[] = [
-  { id: 1, title: 'title1', desc: 'desc', checked: true },
-  { id: 2, title: 'title2', desc: 'desc', checked: true },
-  { id: 3, title: 'title3', desc: 'desc', checked: true },
-  { id: 4, title: 'title4', desc: 'desc', checked: true },
-  { id: 5, title: 'title5', desc: 'desc', checked: false },
-  { id: 6, title: 'title6', desc: 'desc', checked: false },
-  { id: 7, title: 'title7', desc: 'desc', checked: false },
+let data: Todo[] = [
+  { id: uuidv4(), title: 'title1', desc: 'desc', checked: true },
+  { id: uuidv4(), title: 'title2', desc: 'desc', checked: true },
+  { id: uuidv4(), title: 'title3', desc: 'desc', checked: true },
+  { id: uuidv4(), title: 'title4', desc: 'desc', checked: true },
+  { id: uuidv4(), title: 'title5', desc: 'desc', checked: false },
+  { id: uuidv4(), title: 'title6', desc: 'desc', checked: false },
+  { id: uuidv4(), title: 'title7', desc: 'desc', checked: false },
 ];
 
 function update(items: Todo[]): Promise<Todo[]> {
