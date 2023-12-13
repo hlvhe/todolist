@@ -1,7 +1,7 @@
 import { Todo } from '../App';
 import { v4 as uuidv4 } from 'uuid';
 
-let data: Todo[] = [
+const data: Todo[] = [
   { id: uuidv4(), title: 'title1', desc: 'desc', checked: true },
   { id: uuidv4(), title: 'title2', desc: 'desc', checked: true },
   { id: uuidv4(), title: 'title3', desc: 'desc', checked: true },
@@ -11,10 +11,13 @@ let data: Todo[] = [
   { id: uuidv4(), title: 'title7', desc: 'desc', checked: false },
 ];
 
+let fetchAllTimeoutId: NodeJS.Timeout | null = null;
+
 function update(items: Todo[]): Promise<Todo[]> {
   return new Promise((resolve) => {
     setTimeout(() => {
       localStorage.setItem('todos', JSON.stringify(items));
+      console.log('updated');
       resolve(items);
     }, 600);
   });
@@ -22,12 +25,21 @@ function update(items: Todo[]): Promise<Todo[]> {
 
 function fetchAll(): Promise<Todo[]> {
   return new Promise((resolve) => {
-    setTimeout(() => {
+    fetchAllTimeoutId = setTimeout(() => {
       const jsonValue = localStorage.getItem('todos');
       const res = jsonValue == null ? data : JSON.parse(jsonValue);
+      console.log('fetchAll');
       resolve(res);
     }, 1500);
   });
 }
 
-export { update, fetchAll };
+function cancelFetch() {
+  if (fetchAllTimeoutId) {
+    console.log('cancelFetch');
+    clearTimeout(fetchAllTimeoutId);
+    fetchAllTimeoutId = null;
+  }
+}
+
+export { update, fetchAll, cancelFetch };

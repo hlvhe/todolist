@@ -7,7 +7,7 @@ import { CheckboxChangeEvent } from 'antd/es/checkbox';
 import { TodoAddForm } from './components/TodoAddForm/TodoAddForm';
 import api from './api';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export type Todo = {
   id: string;
@@ -22,9 +22,9 @@ function App() {
   const { isLoading, isError, error, data } = useQuery({
     queryKey: ['todos'],
     queryFn: async () => {
-      const todos = await api.todo.fetchAll();
-      setTodos(todos);
-      return todos;
+      const newTodos = await api.todo.fetchAll();
+      setTodos(newTodos);
+      return newTodos;
     },
   });
 
@@ -38,27 +38,15 @@ function App() {
     clickCount: 0,
   });
 
+  useEffect(() => {
+    console.log('Component re-rendered by todos');
+  }, [todos]);
+
   const { mutate: updateTodosMutation } = useMutation({
-    mutationFn: api.todo.update,
-    onMutate: async (newTodos) => {
-      // Cancel any outgoing refetches
-      // (so they don't overwrite our optimistic update)
-      await queryClient.cancelQueries({ queryKey: ['todos'] });
-
-      // Snapshot the previous value
-      const previousTodos = queryClient.getQueryData<Todo[]>(['todos']);
-
-      // Optimistically update to the new value
-      queryClient.setQueryData<Todo[]>(['todos'], newTodos);
-
-      // Return a context object with the snapshotted value
-      return { previousTodos };
-    },
-    // If the mutation fails,
-    // use the context returned from onMutate to roll back
-    onError: (err, newTodo, context) => {
-      const prevTodos = context?.previousTodos ?? [];
-      queryClient.setQueryData<Todo[]>(['todos'], prevTodos);
+    mutationFn: async (todos: Todo[]) => {
+      console.log('mutation');
+      const newtTodos = await api.todo.update(todos);
+      return newtTodos;
     },
     // Always refetch after error or success:
     onSettled: () => {
@@ -70,19 +58,12 @@ function App() {
     },
   });
 
-  if (isLoading) {
-    return <span>Loading...</span>;
-  }
-
-  if (isError) {
-    return <span>Error: {error.message}</span>;
-  }
-
   const maxDelay = 5000;
 
   // Handle the update timeout to prevent too many requests in a short time
   const handleUpdateTimeout = (items: Todo[]) => {
     setTodos(items);
+    api.todo.cancelFetch();
     const currentTime = Date.now();
     let delay = 1000;
     let clickCount = updateTimeout.clickCount;
