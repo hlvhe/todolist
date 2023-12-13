@@ -11,34 +11,39 @@ const data: Todo[] = [
   { id: uuidv4(), title: 'title7', desc: 'desc', checked: false },
 ];
 
-let fetchAllTimeoutId: NodeJS.Timeout | null = null;
+let fetchController: AbortController | null = null;
 
 function update(items: Todo[]): Promise<Todo[]> {
   return new Promise((resolve) => {
     setTimeout(() => {
       localStorage.setItem('todos', JSON.stringify(items));
-      console.log('updated');
       resolve(items);
     }, 600);
   });
 }
 
 function fetchAll(): Promise<Todo[]> {
+  fetchController = new AbortController();
+  const { signal } = fetchController;
+
   return new Promise((resolve) => {
-    fetchAllTimeoutId = setTimeout(() => {
+    const fetchAllTimeoutId = setTimeout(() => {
       const jsonValue = localStorage.getItem('todos');
       const res = jsonValue == null ? data : JSON.parse(jsonValue);
-      console.log('fetchAll');
       resolve(res);
     }, 1500);
+
+    // Attach the abort signal to the fetch timeout
+    signal.addEventListener('abort', () => {
+      clearTimeout(fetchAllTimeoutId);
+    });
   });
 }
 
 function cancelFetch() {
-  if (fetchAllTimeoutId) {
-    console.log('cancelFetch');
-    clearTimeout(fetchAllTimeoutId);
-    fetchAllTimeoutId = null;
+  if (fetchController) {
+    fetchController.abort();
+    fetchController = null;
   }
 }
 

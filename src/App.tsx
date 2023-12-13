@@ -38,13 +38,8 @@ function App() {
     clickCount: 0,
   });
 
-  useEffect(() => {
-    console.log('Component re-rendered by todos');
-  }, [todos]);
-
   const { mutate: updateTodosMutation } = useMutation({
     mutationFn: async (todos: Todo[]) => {
-      console.log('mutation');
       const newtTodos = await api.todo.update(todos);
       return newtTodos;
     },
